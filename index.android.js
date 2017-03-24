@@ -5,28 +5,43 @@
  */
 
 import React, { Component } from 'react';
+import ScrollableTabView, {DefaultTabBar} from 'react-native-scrollable-tab-view';
+import MapView from 'react-native-maps';
 import {
   AppRegistry,
   StyleSheet,
   Text,
-  View
+  View,
+  TouchableOpacity,
+  AsyncStorage
 } from 'react-native';
+import Nearest from './App/Components/Nearest'
+import Menu from './App/Components/Menu'
 
 export default class AwesomeProject extends Component {
+
+  constructor() {
+    super();
+  }
+
+  componentDidMount() {
+    AsyncStorage.getItem('user', (err, result) => {
+      console.log(err, result);
+
+    });
+  }
+
   render() {
     return (
-      <View style={styles.container}>
-        <Text style={styles.welcome}>
-          Welcome to React Native!
-        </Text>
-        <Text style={styles.instructions}>
-          To get started, edit index.android.js
-        </Text>
-        <Text style={styles.instructions}>
-          Double tap R on your keyboard to reload,{'\n'}
-          Shake or press menu button for dev menu
-        </Text>
-      </View>
+      <ScrollableTabView
+        renderTabBar={() => <DefaultTabBar />}
+        ref={(tabView) => { this.tabView = tabView; }}
+      >
+         <Menu tabLabel='Profile' />
+         <Nearest tabLabel='Nearest'/>
+         <Text tabLabel='Trending'>favorite</Text>
+         <Text tabLabel='Search'>project</Text>
+      </ScrollableTabView>
     );
   }
 }
@@ -47,6 +62,9 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     color: '#333333',
     marginBottom: 5,
+  },
+  map: {
+    ...StyleSheet.absoluteFillObject,
   },
 });
 

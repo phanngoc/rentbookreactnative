@@ -25,10 +25,7 @@ export default class AwesomeProject extends Component {
   }
 
   componentDidMount() {
-    AsyncStorage.getItem('user', (err, result) => {
-      console.log(err, result);
 
-    });
   }
 
   render() {

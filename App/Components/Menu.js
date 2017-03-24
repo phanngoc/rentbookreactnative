@@ -17,11 +17,13 @@ import {
   TouchableOpacity,
   Button,
   Navigator,
-  TouchableHighlight
+  TouchableHighlight,
+  AsyncStorage
 } from 'react-native';
 
 import Signin from '../Views/Signin'
 import Profile from '../Views/Profile'
+import Waiting from './Waiting'
 
 const styles = StyleSheet.create({
   menu: {
@@ -62,6 +64,18 @@ export default class Menu extends Component {
 
   };
 
+  constructor() {
+    super();
+    let self = this;
+    this.state = {
+      initialRoute: {name: 'Waiting', passProps: {}}
+    };
+  }
+
+  componentWillMount() {
+
+  }
+
   onPressSignIn(navigator) {
     navigator.push({
       name: 'Signin',
@@ -74,7 +88,9 @@ export default class Menu extends Component {
   }
 
   renderScene(route, navigator) {
-    if (route.name == 'Signin') {
+    if (route.name == 'Waiting') {
+      return <Waiting navigator={navigator} {...route.passProps} />
+    } else if (route.name == 'Signin') {
       return <Signin navigator={navigator} {...route.passProps} />
     } else if (route.name == 'Menu') {
       return (
@@ -109,34 +125,12 @@ export default class Menu extends Component {
   }
 
   render() {
+    console.log("render", this.state);
     return (
       <Navigator
-        initialRoute={{name: 'Menu', passProps: {}}}
+        initialRoute={this.state.initialRoute}
         renderScene={this.renderScene.bind(this)}
         />
-    );
-  }
-};
-
-var NavigationBarRouteMapper = {
-  LeftButton(route, navigator, index, navState) {
-    return (
-        <Button
-        title="Back"
-        accessibilityLabel="Register account"
-      />
-    );
-  },
-  RightButton(route, navigator, index, navState) {
-    return null;
-  },
-  Title(route, navigator, index, navState) {
-    return (
-      <TouchableOpacity style={{flex: 1, justifyContent: 'center'}}>
-        <Text style={{color: 'yellow', margin: 10, fontSize: 16}}>
-          登录
-        </Text>
-      </TouchableOpacity>
     );
   }
 };

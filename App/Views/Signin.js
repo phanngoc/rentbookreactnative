@@ -15,7 +15,8 @@ import {
   View,
   TouchableOpacity,
   TouchableHighlight,
-  AsyncStorage
+  AsyncStorage,
+  Button
 } from 'react-native';
 
 var Form = t.form.Form;
@@ -60,13 +61,12 @@ export default class Signin extends Component {
       })
       .then((response) => response.json())
       .then(function(responseJson) {
-         console.log(responseJson.token);
-         AsyncStorage.setItem('token', responseJson.token, (result) => {
-           self.props.navigator.push({
-             name: 'Profile',
-             passProps: {}
-           });
-         }).done();
+         AsyncStorage.setItem('token', responseJson.body.token);
+         AsyncStorage.setItem('user', JSON.stringify(responseJson.body.user));
+         self.props.navigator.push({
+           name: 'Profile',
+           passProps: {}
+         });
       })
       .catch(function(error) {
       });

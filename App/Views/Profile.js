@@ -15,6 +15,7 @@ import {
 
 import MapView from 'react-native-maps';
 import Tabs from 'react-native-tabs';
+import {BASE_URL} from '../const';
 
 export default class Profile extends Component {
   constructor() {
@@ -25,19 +26,20 @@ export default class Profile extends Component {
       phone: '',
       address: '',
       page: 'first',
-      dataSourceBooks: ds.cloneWithRows([])
+      dataSourceBooks: ds.cloneWithRows([]),
+      dataSourceBooksBorrow: ds.cloneWithRows([])
     }
   }
 
   componentDidMount() {
     var self = this;
     AsyncStorage.getItem('token', function(error, result) {
-      fetch('http://172.16.3.66:3000/api/users/myprofile', {
+      fetch(BASE_URL + '/api/users/myprofile', {
         method: 'GET',
         headers: {
           'Accept': 'application/json',
           'Content-Type': 'application/json',
-          'x-access-token': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NSwibmFtZSI6Ik11cmwgR3JpbWVzIiwiZW1haWwiOiJLaGFsaWwyN0Bob3RtYWlsLmNvbSIsImF2YXRhciI6Imh0dHBzOi8vczMuYW1hem9uYXdzLmNvbS91aWZhY2VzL2ZhY2VzL3R3aXR0ZXIvcmFjaGVscmV2ZWxleS8xMjguanBnIiwidXNlcm5hbWUiOiJLaWFubmE5OCIsInBhc3N3b3JkIjoiJDJhJDEwJExHdnU3WERpTmtwdTVNa0NlYTV6bXV5cEh5ekVuU0I2VjROR1JaLlQzSklnZUJuYW5JUkxpIiwicGhvbmUiOiIxLTgwMy0yNTUtNzg3NiB4MzIyIiwiY3JlYXRlZF9hdCI6IjIwMTctMDMtMjBUMDg6MzM6NDYuNDMzWiIsInVwZGF0ZWRfYXQiOm51bGwsImFkZHJlc3MiOm51bGwsImlhdCI6MTQ5MDM0NjI3NywiZXhwIjoxNDkwMzQ5ODc3fQ.HPbUeRwLMXbIjo__CRuRmAqYZyVUXP8OsmKtMiB0uQs'
+          'x-access-token': result
         }
       })
       .then((response) => response.json())
@@ -47,6 +49,7 @@ export default class Profile extends Component {
           console.log("set state");
           self.setState(responseJson.body);
           self._attachBooks(responseJson.body.books);
+          self._attachBooksBorrow(responseJson.body.actions);
         }
       })
     });
@@ -54,6 +57,15 @@ export default class Profile extends Component {
 
   onChange() {
 
+  }
+
+  _attachBooksBorrow(actions) {
+    let booksBorrow = _.map(actions, function(action) {
+      return _.pick(action, ['book']).book;
+    });
+    console.log("_attachBooksBorrow", booksBorrow);
+    const ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
+    this.setState({dataSourceBooksBorrow: ds.cloneWithRows(booksBorrow)});
   }
 
   _attachBooks(books) {
@@ -125,6 +137,11 @@ export default class Profile extends Component {
       />);
     } else if (this.state.page == 'second') {
       return (this._buildMap());
+    } else if (this.state.page == 'third') {
+      return (<ListView
+        dataSource={this.state.dataSourceBooksBorrow}
+        renderRow={this._renderRowBook}
+      />);
     }
   }
 
@@ -146,11 +163,11 @@ export default class Profile extends Component {
           <Text style={styles.itemLabel}>Phone</Text>
           <Text style={styles.itemContent}>{this.state.phone}</Text>
         </View>
-        <ScrollView scrollsToTop={false}
-          style={styles.contentscroll}
+        <View
+          style={styles.contentTab}
           >
           {this._tabShow()}
-        </ScrollView>
+        </View>
         <Tabs selected={this.state.page} style={{backgroundColor:'white'}}
                selectedStyle={{color:'red'}} onSelect={el => this.setState({page: el.props.name})}>
              <Text name="first">Books</Text>
@@ -167,6 +184,16 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 20,
   },
+  item: {
+    flex: 1,
+  },
+  itemLabel: {
+    fontWeight: 'bold',
+    color: '#f9872f'
+  },
+  itemContent: {
+    color: '#ce9163'
+  },
   avatar: {
     width: 48,
     height: 48,
@@ -179,8 +206,8 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     fontSize: 16
   },
-  contentscroll: {
-
+  contentTab: {
+    flex: 2,
   },
   itemBook: {
     backgroundColor: '#f4e2a1',
@@ -202,8 +229,6 @@ const styles = StyleSheet.create({
   },
   map: {
     ...StyleSheet.absoluteFillObject,
-    width: 80,
-    height: 80
   },
 });
 

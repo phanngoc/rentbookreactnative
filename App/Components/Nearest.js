@@ -15,6 +15,8 @@ import {
   TouchableOpacity
 } from 'react-native';
 
+import {BASE_URL} from '../const';
+
 export default class Nearest extends Component {
 
   constructor() {
@@ -40,7 +42,7 @@ export default class Nearest extends Component {
           latitude: position.coords.latitude,
           longitude: position.coords.longitude
         });
-        fetch('http://172.16.3.66:3000/api/books/nearest?' + query, {
+        fetch(BASE_URL+'/api/books/nearest?' + query, {
           method: 'GET',
           headers: {
             'Accept': 'application/json',

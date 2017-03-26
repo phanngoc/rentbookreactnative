@@ -38,6 +38,8 @@ var options = {
   }
 }; // optional rendering options (see documentation)
 
+import {BASE_URL} from '../const';
+
 export default class Signin extends Component {
   constructor() {
     super();
@@ -51,7 +53,7 @@ export default class Signin extends Component {
     var value = this.refs.form.getValue();
     var self = this;
     if (value) {
-      fetch('http://172.16.3.66:3000/api/authenticate', {
+      fetch(BASE_URL+'/api/authenticate', {
        method: 'POST',
        headers: {
          'Accept': 'application/json',
@@ -61,14 +63,15 @@ export default class Signin extends Component {
       })
       .then((response) => response.json())
       .then(function(responseJson) {
-         AsyncStorage.setItem('token', responseJson.body.token);
-         AsyncStorage.setItem('user', JSON.stringify(responseJson.body.user));
-         self.props.navigator.push({
-           name: 'Profile',
-           passProps: {}
-         });
+        AsyncStorage.setItem('token', responseJson.body.token);
+        AsyncStorage.setItem('user', JSON.stringify(responseJson.body.user));
+        self.props.navigator.push({
+          name: 'Profile',
+          passProps: {}
+        });
       })
       .catch(function(error) {
+        console.log(error);
       });
     }
   }

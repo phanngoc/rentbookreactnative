@@ -120,12 +120,11 @@ export default class Menu extends Component {
         </ScrollView>
       )
     } else if (route.name == 'Profile') {
-      return <Profile navigator={navigator} {...route.passProps} />
+      return <Profile navigator={navigator} navigatorMain={this.props.navigatorMain} {...route.passProps} />
     }
   }
 
   render() {
-    console.log("render", this.state);
     return (
       <Navigator
         initialRoute={this.state.initialRoute}

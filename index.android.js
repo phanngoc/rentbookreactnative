@@ -13,35 +13,64 @@ import {
   Text,
   View,
   TouchableOpacity,
-  AsyncStorage
+  AsyncStorage,
+  Navigator,
+  BackAndroid
 } from 'react-native';
 import Nearest from './App/Components/Nearest'
 import Menu from './App/Components/Menu'
+import BookDetail from './App/Views/BookDetail'
 
 export default class AwesomeProject extends Component {
 
   constructor() {
     super();
+    this.state = {
+      initialRoute: {name: "Main", passProps: {}}
+    }
   }
 
   componentDidMount() {
 
   }
 
-  render() {
-    return (
-      <ScrollableTabView
+  renderScene(route, navigator) {
+    if (route.name == 'Main') {
+      return (<ScrollableTabView
         renderTabBar={() => <DefaultTabBar />}
         ref={(tabView) => { this.tabView = tabView; }}
       >
-         <Menu tabLabel='Profile' />
+         <Menu tabLabel='Profile' navigatorMain={navigator}
+           {...route.passProps}/>
          <Nearest tabLabel='Nearest'/>
          <Text tabLabel='Trending'>favorite</Text>
          <Text tabLabel='Search'>project</Text>
-      </ScrollableTabView>
+      </ScrollableTabView>);
+    } else if (route.name == 'BookDetail') {
+      return <BookDetail navigatorMain={navigator} {...route.passProps} />
+    }
+  }
+
+  render() {
+    return (
+      <Navigator
+        initialRoute={this.state.initialRoute}
+        renderScene={this.renderScene.bind(this)}
+        ref={(nav) => { navigator = nav; }}
+        />
+
     );
   }
 }
+
+var navigator;
+BackAndroid.addEventListener('hardwareBackPress', () => {
+    if (navigator && navigator.getCurrentRoutes().length > 1) {
+        navigator.pop();
+        return true;
+    }
+    return false;
+});
 
 const styles = StyleSheet.create({
   container: {

@@ -44,26 +44,23 @@ export default class Profile extends Component {
       })
       .then((response) => response.json())
       .then(function(responseJson) {
-        console.log('profile', responseJson.success, responseJson.body);
         if (responseJson.success == true) {
-          console.log("set state");
           self.setState(responseJson.body);
           self._attachBooks(responseJson.body.books);
           self._attachBooksBorrow(responseJson.body.actions);
+        } else {
+          self.props.navigator.push({name: 'Signin', passProps: {}});
         }
+      }).catch(function(error) {
+        console.log("error", error);
       })
     });
-  }
-
-  onChange() {
-
   }
 
   _attachBooksBorrow(actions) {
     let booksBorrow = _.map(actions, function(action) {
       return _.pick(action, ['book']).book;
     });
-    console.log("_attachBooksBorrow", booksBorrow);
     const ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
     this.setState({dataSourceBooksBorrow: ds.cloneWithRows(booksBorrow)});
   }
@@ -73,21 +70,26 @@ export default class Profile extends Component {
     this.setState({dataSourceBooks: ds.cloneWithRows(books)});
   }
 
+  _onPressRow(rowData) {
+    this.props.navigatorMain.push({name: "BookDetail", passProps: {rowData}});
+  }
+
   _renderRowBook(rowData) {
     return (
       <View style={styles.itemBook}>
         <Image style={styles.itemImageBook}
           source={require('../../img/logo_og.png')} />
-        <View style={styles.itemInfo}>
-          <Text>
-            {rowData.title}
-          </Text>
-          <Text>
-            {rowData.description}
-          </Text>
-        </View>
+        <TouchableHighlight onPress={this._onPressRow.bind(this, rowData)} style={styles.wrItemBook}>
+          <View style={styles.itemInfo}>
+            <Text>
+              {rowData.title}
+            </Text>
+            <Text>
+              {rowData.description}
+            </Text>
+          </View>
+        </TouchableHighlight>
       </View>
-
     )
   }
 
@@ -133,53 +135,63 @@ export default class Profile extends Component {
     if (this.state.page == 'first') {
       return (<ListView
         dataSource={this.state.dataSourceBooks}
-        renderRow={this._renderRowBook}
+        renderRow={this._renderRowBook.bind(this)}
+        enableEmptySections={true}
       />);
     } else if (this.state.page == 'second') {
       return (this._buildMap());
     } else if (this.state.page == 'third') {
       return (<ListView
         dataSource={this.state.dataSourceBooksBorrow}
-        renderRow={this._renderRowBook}
+        renderRow={this._renderRowBook.bind(this)}
+        enableEmptySections={true}
       />);
     }
   }
 
   render() {
     return (
-      <View style={styles.container}>
-        <View style={styles.avatarContainer}>
-          <Image
-            style={styles.avatar}
-            source={{uri: this.state.avatar}}
-          />
-          <Text style={styles.name}>{this.state.name}</Text>
+      <Image source={require('../../img/subtle-vertical-stripes.png')}
+        style={styles.backgroundImage}>
+        <View style={styles.container}>
+          <View style={styles.avatarContainer}>
+            <Image
+              style={styles.avatar}
+              source={{uri: this.state.avatar}}
+            />
+            <Text style={styles.name}>{this.state.name}</Text>
+          </View>
+          <View style={styles.item}>
+            <Text style={styles.itemLabel}>Username</Text>
+            <Text style={styles.itemContent}>{this.state.username}</Text>
+            <Text style={styles.itemLabel}>Address</Text>
+            <Text style={styles.itemContent}>{this.state.address}</Text>
+            <Text style={styles.itemLabel}>Phone</Text>
+            <Text style={styles.itemContent}>{this.state.phone}</Text>
+          </View>
+          <View
+            style={styles.contentTab}
+            >
+            {this._tabShow()}
+          </View>
+          <Tabs selected={this.state.page} style={{backgroundColor:'white'}}
+                 selectedStyle={{color:'red'}} onSelect={el => this.setState({page: el.props.name})}>
+               <Text name="first">Books</Text>
+               <Text name="second">Maps</Text>
+               <Text name="third">Borrow</Text>
+           </Tabs>
         </View>
-        <View style={styles.item}>
-          <Text style={styles.itemLabel}>Username</Text>
-          <Text style={styles.itemContent}>{this.state.username}</Text>
-          <Text style={styles.itemLabel}>Address</Text>
-          <Text style={styles.itemContent}>{this.state.address}</Text>
-          <Text style={styles.itemLabel}>Phone</Text>
-          <Text style={styles.itemContent}>{this.state.phone}</Text>
-        </View>
-        <View
-          style={styles.contentTab}
-          >
-          {this._tabShow()}
-        </View>
-        <Tabs selected={this.state.page} style={{backgroundColor:'white'}}
-               selectedStyle={{color:'red'}} onSelect={el => this.setState({page: el.props.name})}>
-             <Text name="first">Books</Text>
-             <Text name="second">Maps</Text>
-             <Text name="third">Borrow</Text>
-         </Tabs>
-      </View>
+      </Image>
     );
   }
 }
 
 const styles = StyleSheet.create({
+  backgroundImage: {
+    flex: 1,
+    width: null,
+    height: null
+  },
   container: {
     flex: 1,
     padding: 20,
@@ -208,6 +220,9 @@ const styles = StyleSheet.create({
   },
   contentTab: {
     flex: 2,
+  },
+  wrItemBook: {
+    flex: 1,
   },
   itemBook: {
     backgroundColor: '#f4e2a1',

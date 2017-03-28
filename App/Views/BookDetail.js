@@ -13,7 +13,9 @@ import {
   ListView,
   Button,
   TextInput,
-  BackAndroid
+  BackAndroid,
+  Keyboard,
+  Alert
 } from 'react-native';
 
 import MapView from 'react-native-maps';
@@ -32,17 +34,20 @@ export default class BookDetail extends Component {
       user: '',
       images: [],
       dataSourceComments: ds.cloneWithRows([]),
-      comments: []
+      comments: [],
+      imgBtnControl: require('../../img/borrow-512.png')
     }
   }
 
-  componentDidMount() {
+  async componentDidMount() {
     var self = this;
+    let token = await AsyncStorage.getItem('token');
     fetch(BASE_URL + '/api/books/5', {
       method: 'GET',
       headers: {
         'Accept': 'application/json',
         'Content-Type': 'application/json',
+        'x-access-token': token
       }
     })
     .then((response) => response.json())
@@ -51,6 +56,11 @@ export default class BookDetail extends Component {
         self.setState(responseJson.body);
         self._attachImages(responseJson.body.images);
         self._attachComments(responseJson.body.comments);
+        let imgBtnControlTe = self.state.isborrow ? require('../../img/Button-Check-512.png') :
+          require('../../img/borrow-512.png');
+        let imgBtnControl = (self.state.type == 2) ? require('../../img/Remove-128.png') :
+          imgBtnControlTe;
+        self.setState({imgBtnControl: imgBtnControl})
       }
     });
   }
@@ -106,6 +116,7 @@ export default class BookDetail extends Component {
   }
 
   async submitComment() {
+    Keyboard.dismiss();
     let self = this;
     let token = await AsyncStorage.getItem('token');
     fetch(BASE_URL + '/api/books/5/comments', {
@@ -129,6 +140,39 @@ export default class BookDetail extends Component {
     });
   }
 
+  async onPressShare() {
+    console.log("onPress share");
+    let btnWantOk = require('../../img/Button-Check-512.png');
+    let token = await AsyncStorage.getItem('token');
+    let self = this;
+    Alert.alert(
+      'Do you want to borrow this book ?',
+      'You will be queued and wait for owner accept that you can borrow this book',
+      [
+        {text: 'Ask me later', onPress: () => console.log('Ask me later pressed')},
+        {text: 'Cancel', onPress: () => console.log('Cancel Pressed'), style: 'cancel'},
+        {text: 'OK', onPress: () => {
+          fetch(BASE_URL + '/api/books/5/borrow', {
+            method: 'POST',
+            headers: {
+              'Accept': 'application/json',
+              'Content-Type': 'application/json',
+              'x-access-token': token
+            }
+          })
+          .then((response) => response.json())
+          .then(function(responseJson) {
+            if (responseJson.success == true) {
+              self.setState({imgBtnControl: btnWantOk});
+            }
+          });
+        }},
+      ],
+      { cancelable: false }
+    )
+
+  }
+
   render() {
     return (
         <Image source={require('../../img/subtle-vertical-stripes.png')}
@@ -138,6 +182,19 @@ export default class BookDetail extends Component {
               horizontal={true} autoplay>
               {this._buildImagesSlide()}
             </Swiper>
+            <View style={styles.wrInfo}>
+              <View style={styles.actionControl}>
+                <Text style={styles.title}>{this.state.title}</Text>
+                <TouchableHighlight onPress={this.onPressShare.bind(this)}
+                  style={styles.actionControlBorrow}>
+                  <Image
+                    style={styles.actionControlImg}
+                    source={this.state.imgBtnControl}
+                  />
+                </TouchableHighlight>
+              </View>
+              <Text style={styles.description}>{this.state.description}</Text>
+            </View>
             <View style={styles.wrAvatar}>
               <Image
                 style={styles.avatar}
@@ -145,16 +202,13 @@ export default class BookDetail extends Component {
               />
               <Text style={styles.name}>{this.state.user.name}</Text>
             </View>
-            <View style={styles.wrInfo}>
-              <Text style={styles.description}>{this.state.description}</Text>
-            </View>
             <View style={styles.wrComment}>
               <View style={styles.wrCommentLabel}>
                 <Text style={styles.wrCommentLabelText}>
                   Comments
                 </Text>
                 <Icon name="plus-circle" size={30} color="#f7d756"
-                  style={styles.wrCommentLabelIcon} onPress={() => {console.log("co open modal"); this.refs.modalComment.open();}} />
+                  style={styles.wrCommentLabelIcon} onPress={() => {this.refs.modalComment.open();}} />
               </View>
               <ListView
                 dataSource={this.state.dataSourceComments}
@@ -177,7 +231,7 @@ export default class BookDetail extends Component {
                   />
                 <View style={styles.frCommentControl}>
                   <Button
-                    onPress={() => this.refs.modalComment.close()}
+                    onPress={() => {Keyboard.dismiss(); this.refs.modalComment.close()}}
                     title="Cancel"
                     color="#841584"
                   />
@@ -195,15 +249,24 @@ export default class BookDetail extends Component {
   }
 }
 
-BackAndroid.addEventListener('hardwareBackPress', function() {
- // this.onMainScreen and this.goBack are just examples, you need to use your own implementation here
- // Typically you would use the navigator here to go to the last state.
-   this.props.navigatorMain.pop();
-   return true;
-});
-
-
 const styles = StyleSheet.create({
+  // Action share
+  actionControl: {
+    flexDirection: 'row',
+    justifyContent: 'space-between'
+  },
+
+  actionControlBorrow: {
+    backgroundColor: '#b9f7a0',
+    borderRadius: 6
+  },
+
+  actionControlImg: {
+    width: 48,
+    height: 48
+  },
+  // End action share
+
   // Style modal comment
   backgroundImage: {
     flex: 1,
@@ -321,6 +384,13 @@ const styles = StyleSheet.create({
   wrInfo: {
     minHeight: 48,
     padding: 5
+  },
+  title: {
+    fontWeight: 'bold',
+    fontSize: 18,
+    paddingTop: 7,
+    paddingBottom: 5,
+    color: '#ea7344'
   },
   description: {
 

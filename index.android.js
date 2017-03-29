@@ -31,12 +31,15 @@ export default class AwesomeProject extends Component {
     super();
     this.state = {
       initialRoute: {name: "Main", passProps: {}},
+      isExpand: false,
     }
 
     this.btnPlus = null;
     this._previousLeft = 0;
     this._previousTop = 0;
     this.animRotate = this.animRotate || new Animated.Value(0);
+    this.animMenuOpa = this.animMenuOpa || new Animated.Value(0);
+    this.animMenuTran = this.animMenuTran || new Animated.Value(0);
 
     this._circleStyles = {
       style: {
@@ -64,30 +67,6 @@ export default class AwesomeProject extends Component {
     //  ).start();
   }
 
-  getDirectionAndColor({ moveX, moveY, dx, dy}) {
-    const draggedDown = dy > 30;
-    const draggedUp = dy < -30;
-    const draggedLeft = dx < -30;
-    const draggedRight = dx > 30;
-    const isRed = moveY < 90 && moveY > 40 && moveX > 0 && moveX < width;
-    const isBlue = moveY > (height - 50) && moveX > 0 && moveX < width;
-    let dragDirection = '';
-
-    if (draggedDown || draggedUp) {
-      if (draggedDown) dragDirection += 'dragged down '
-      if (draggedUp) dragDirection +=  'dragged up ';
-    }
-
-    if (draggedLeft || draggedRight) {
-      if (draggedLeft) dragDirection += 'dragged left '
-      if (draggedRight) dragDirection +=  'dragged right ';
-    }
-
-    if (isRed) return `red ${dragDirection}`
-    if (isBlue) return `blue ${dragDirection}`
-    if (dragDirection) return dragDirection;
-  }
-
   componentWillMount() {
     let self = this;
 
@@ -97,8 +76,6 @@ export default class AwesomeProject extends Component {
       },
 
       onStartShouldSetPanResponderCapture: (evt, gestureState) => {
-        console.log("onStartShouldSetPanResponderCapture", gestureState.dx,
-          gestureState.dy);
         return gestureState.dx != 0 && gestureState.dy != 0;
       },
 
@@ -108,8 +85,6 @@ export default class AwesomeProject extends Component {
       },
 
       onMoveShouldSetPanResponderCapture: (evt, gestureState) => {
-        console.log("onMoveShouldSetPanResponderCapture", gestureState.dx,
-          gestureState.dy);
         return gestureState.dx != 0 && gestureState.dy != 0;
       },
 
@@ -168,14 +143,85 @@ export default class AwesomeProject extends Component {
   }
 
   onPressPlus() {
-    console.log('onPressPlus');
-    Animated.timing(          // Uses easing functions
-       this.animRotate,    // The value to drive
-       {toValue: 1, duration: 500}            // Configuration
-     ).start();                // Don't forget start!
+    if (this.state.isExpand) {
+     Animated.timing(
+         this.animRotate,
+         {toValue: 0, duration: 500}
+       ).start();
+
+     Animated.parallel([
+        Animated.timing(this.animMenuOpa, {
+          toValue: 0,
+          duration: 500
+        }),
+        Animated.timing(this.animMenuTran, {
+          toValue: 0,
+          duration: 500
+        })
+     ]).start();
+
+     let self = this;
+     setTimeout(
+      function() {
+        self.setState({isExpand: !self.state.isExpand});
+      }, 500);
+    } else {
+      Animated.timing(
+         this.animRotate,
+         {toValue: 1, duration: 500}
+       ).start();
+
+      Animated.parallel([
+          Animated.timing(this.animMenuOpa, {
+            toValue: 1,
+            duration: 500
+          }),
+          Animated.timing(this.animMenuTran, {
+            toValue: 1,
+            duration: 500
+          })
+       ]).start();
+
+       this.setState({isExpand: !this.state.isExpand})
+    }
   }
 
   render() {
+    let menuBlock = (
+      <View style={styles.menu}>
+        <Animated.View
+           style={{
+             transform: [
+               {
+                 translateY: this.animMenuTran.interpolate({
+                   inputRange: [0, 1],
+                   outputRange: [
+                     1, 10
+                   ],
+                 })
+               }
+             ],
+            opacity: this.animMenuOpa
+           }}>
+          <View style={styles.menuCreateBook}>
+           <Button style={styles.menuCreateBook} title="Create book"></Button>
+          </View>
+          <View style={styles.menuCreateBook}>
+           <Button style={styles.menuCreateBook} title="Library"></Button>
+          </View>
+          <View style={styles.menuCreateBook}>
+           <Button style={styles.menuCreateBook} title="Library"></Button>
+          </View>
+        </Animated.View>
+      </View>
+    );
+
+    let menuView = (<View></View>);
+
+    if (this.state.isExpand == true) {
+      menuView = menuBlock;
+    }
+
     return (
       <View style={styles.wrapper}>
         <View style={styles.btnCreate}
@@ -184,14 +230,7 @@ export default class AwesomeProject extends Component {
           }}
           {...this._panResponder.panHandlers}
           >
-          <View style={styles.menu}>
-            <View style={styles.menuCreateBook}>
-              <Button style={styles.menuCreateBook} title="Create book"></Button>
-            </View>
-            <View style={styles.menuCreateBook}>
-              <Button style={styles.menuCreateBook} title="Library"></Button>
-            </View>
-          </View>
+          {menuView}
           <TouchableOpacity onPress={this.onPressPlus.bind(this)} >
             <Animated.View
                style={{
@@ -233,19 +272,18 @@ const styles = StyleSheet.create({
     flex: 1
   },
   menuCreateBook: {
-    marginBottom: 3,
+    marginBottom: 4,
   },
   menu: {
     justifyContent: 'space-around',
-    flexDirection: 'column'
+    flexDirection: 'column',
+    marginTop: -10
   },
   btnCreate: {
     position: 'absolute',
     top: 0,
     left: 0,
     zIndex: 100,
-    // width: 120,
-    // height: 120,
     justifyContent: 'flex-start',
     flexDirection: 'row'
   },
@@ -258,16 +296,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#F5FCFF',
-  },
-  welcome: {
-    fontSize: 20,
-    textAlign: 'center',
-    margin: 10,
-  },
-  instructions: {
-    textAlign: 'center',
-    color: '#333333',
-    marginBottom: 5,
   },
   map: {
     ...StyleSheet.absoluteFillObject,

@@ -18,22 +18,43 @@ import {
   Alert
 } from 'react-native';
 
-import MapView from 'react-native-maps';
 import {BASE_URL} from '../const';
-import Swiper from 'react-native-swiper';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import Modal from 'react-native-modalbox';
+import ImagePicker from 'react-native-image-picker';
+import t from 'tcomb-form-native';
+import Dimensions from 'Dimensions';
+
+var Form = t.form.Form;
+
+var CreateBookForm = t.struct({
+  title: t.Str,
+  description: t.Str
+});
+
+var optionsForm = {
+  fields: {
+    title: {
+
+    },
+    description: {
+      placeholder: 'Some thing about book',
+      multiline: true,
+      numberOfLines: 3
+    },
+  }
+};
+
+var heightWindow = Dimensions.get('window').height;
+var widthWindow = Dimensions.get('window').width;
 
 export default class CreateBook extends Component {
   constructor() {
     super();
-    const ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
     this.state = {
       title: '',
       description: '',
-      user: '',
       images: [],
-      dataSourceComments: ds.cloneWithRows([]),
     }
   }
 
@@ -41,76 +62,118 @@ export default class CreateBook extends Component {
 
   }
 
+  uploadImages() {
+    var options = {
+      title: 'Select Images Book',
+      customButtons: [
+        {name: 'fb', title: 'Choose Photo from Facebook'},
+      ],
+      storageOptions: {
+        skipBackup: true,
+        path: 'images'
+      }
+    };
+
+    var self = this;
+
+    ImagePicker.showImagePicker(options, (response) => {
+      console.log('Response = ', response);
+      if (response.didCancel) {
+        console.log('User cancelled image picker');
+      }
+      else if (response.error) {
+        console.log('ImagePicker Error: ', response.error);
+      }
+      else if (response.customButton) {
+        console.log('User tapped custom button: ', response.customButton);
+      }
+      else {
+        console.log(response);
+        let images = _.union(self.state.images, [response]);
+        // You can also display the image using data:
+        // let source = { uri: 'data:image/jpeg;base64,' + response.data };
+        self.setState({
+          images: images
+        });
+      }
+    });
+  }
+
+  buildImagePreview() {
+    var listImageView = [];
+    this.state.images.map(function(value, key) {
+      let imageView = (
+        <View style={styles.wrImagePreview} key={key}>
+          <Image style={styles.imagePreview} source={{uri: value.uri}}
+            resizeMode="contain" />
+        </View>
+      );
+      listImageView.push(imageView);
+    });
+    let btnAddView = (
+      <TouchableOpacity onPress={this.uploadImages.bind(this)} style={styles.wrImagePreview} key={this.state.images.length}>
+        <Image source={require('../../img/icon_upload.png')} style={styles.btnAddImage}
+          resizeMode="contain" />
+      </TouchableOpacity>
+    )
+    listImageView.push(btnAddView);
+    return listImageView;
+  }
+
+  onChange() {
+  }
+
+  async onCreateBook() {
+    var token = await AsyncStorage.getItem('token');
+    var valueForm = this.refs.form.getValue();
+    var self = this;
+    let formdata = new FormData();
+    formdata.append("title", valueForm.title);
+    formdata.append("description", valueForm.description);
+    _.forEach(this.state.images, function(value) {
+      formdata.append("images", {uri: value.uri, name: value.fileName, type: 'multipart/form-data'});
+    });
+
+    fetch(BASE_URL + '/api/books', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          'x-access-token': token
+        },
+        body: formdata
+      })
+      .then((response) => response.json())
+      .then(response => {
+        if (response.success) {
+          self.props.navigatorMain.pop();
+        }
+      }).catch(err => {
+        console.log(err);
+      });
+  }
+
   render() {
     return (
         <Image source={require('../../img/subtle-vertical-stripes.png')}
           style={styles.backgroundImage}>
           <View style={styles.container}>
-            <Swiper style={styles.wrapperImages} showsButtons={true} height={200}
-              horizontal={true} autoplay>
-              {this._buildImagesSlide()}
-            </Swiper>
-            <View style={styles.wrInfo}>
-              <View style={styles.actionControl}>
-                <Text style={styles.title}>{this.state.title}</Text>
-                <TouchableHighlight onPress={this.onPressShare.bind(this)}
-                  style={styles.actionControlBorrow}>
-                  <Image
-                    style={styles.actionControlImg}
-                    source={this.state.imgBtnControl}
-                  />
-                </TouchableHighlight>
-              </View>
-              <Text style={styles.description}>{this.state.description}</Text>
+            <View style={styles.wrImages}>
+              <ScrollView
+                 ref={(scrollView) => { this._scrollView = scrollView; }}
+                 onScroll={() => { console.log('onScroll!'); }}
+                 scrollEventThrottle={200}
+                 horizontal={true}
+                 style={styles.scrollView}>
+                 {this.buildImagePreview()}
+               </ScrollView>
             </View>
-            <View style={styles.wrAvatar}>
-              <Image
-                style={styles.avatar}
-                source={{uri: this.state.user.avatar}}
+            <Form
+              ref="form"
+              type={CreateBookForm}
+              options={optionsForm}
+              onChange={this.onChange.bind(this)}
               />
-              <Text style={styles.name}>{this.state.user.name}</Text>
-            </View>
-            <View style={styles.wrComment}>
-              <View style={styles.wrCommentLabel}>
-                <Text style={styles.wrCommentLabelText}>
-                  Comments
-                </Text>
-                <Icon name="plus-circle" size={30} color="#f7d756"
-                  style={styles.wrCommentLabelIcon} onPress={() => {this.refs.modalComment.open();}} />
-              </View>
-              <ListView
-                dataSource={this.state.dataSourceComments}
-                renderRow={this._renderRowComment.bind(this)}
-                enableEmptySections={true}
-              />
-            </View>
-            <Modal style={[styles.modalComment]} position={"center"} ref={"modalComment"} backdropPressToClose={false}>
-              <View style={styles.frComment}>
-                <View style={styles.frCommentLabel}>
-                  <Text style={styles.frCommentLabelText}>
-                    Add your comment
-                  </Text>
-                </View>
-                <TextInput
-                  multiline={true}
-                  numberOfLines={4}
-                  onChangeText={(text) => this.setState({text})}
-                  style={styles.frCommentTextInput}
-                  />
-                <View style={styles.frCommentControl}>
-                  <Button
-                    onPress={() => {Keyboard.dismiss(); this.refs.modalComment.close()}}
-                    title="Cancel"
-                    color="#841584"
-                  />
-                  <Button
-                    onPress={this.submitComment.bind(this)}
-                    title="Submit"
-                    color="#841584"
-                  />
-                </View>
-              </View>
-            </Modal>
+            <Button title="Create Book" onPress={this.onCreateBook.bind(this)}></Button>
           </View>
         </Image>
     );
@@ -119,8 +182,37 @@ export default class CreateBook extends Component {
 
 const styles = StyleSheet.create({
   backgroundImage: {
+    flex: 1,
+    width: null,
+    height: null
+  },
+  container: {
+    flex: 1
+  },
+  wrImages: {
 
   },
+  scrollView: {
+    height: 123,
+    backgroundColor: '#eaeaea'
+  },
+  wrImagePreview: {
+    width: widthWindow / 3,
+    height: 120,
+    padding: 3,
+    borderColor: '#bcbcbc',
+    borderWidth: 2,
+    borderStyle: 'solid',
+    borderRadius: 3
+  },
+  imagePreview: {
+    width: widthWindow / 3 - 10,
+    height: 114
+  },
+  btnAddImage: {
+    width: widthWindow / 3 - 10,
+    height: 114
+  }
 });
 
 AppRegistry.registerComponent('CreateBook', () => CreateBook);

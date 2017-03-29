@@ -176,7 +176,7 @@ export default class BookDetail extends Component {
   render() {
     return (
         <Image source={require('../../img/subtle-vertical-stripes.png')}
-          style={styles.backgroundImage}>
+          style={styles.ge}>
           <View style={styles.container}>
             <Swiper style={styles.wrapperImages} showsButtons={true} height={200}
               horizontal={true} autoplay>

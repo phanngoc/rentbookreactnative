@@ -90,8 +90,6 @@ export default class CreateBook extends Component {
       else {
         console.log(response);
         let images = _.union(self.state.images, [response]);
-        // You can also display the image using data:
-        // let source = { uri: 'data:image/jpeg;base64,' + response.data };
         self.setState({
           images: images
         });

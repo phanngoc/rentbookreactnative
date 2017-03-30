@@ -96,7 +96,6 @@ export default class BookDetail extends Component {
           </Text>
         </View>
       </View>
-
     )
   }
 

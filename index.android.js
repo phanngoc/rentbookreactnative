@@ -26,6 +26,7 @@ import Menu from './App/Components/Menu'
 import BookDetail from './App/Views/BookDetail'
 import CreateBook from './App/Views/CreateBook'
 import GlobalMenu from './App/Components/GlobalMenu'
+import Search from './App/Views/Search'
 
 export default class AwesomeProject extends Component {
 
@@ -52,7 +53,7 @@ export default class AwesomeProject extends Component {
            {...route.passProps}/>
          <Nearest tabLabel='Nearest'/>
          <Text tabLabel='Trending'>favorite</Text>
-         <Text tabLabel='Search'>project</Text>
+         <Search tabLabel='Search' navigatorMain={navigator}></Search>
       </ScrollableTabView>);
     } else if (route.name == 'BookDetail') {
       innerView = <BookDetail navigatorMain={navigator} {...route.passProps} />

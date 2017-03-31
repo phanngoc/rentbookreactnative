@@ -44,6 +44,7 @@ export default class Profile extends Component {
       })
       .then((response) => response.json())
       .then(function(responseJson) {
+        console.log("responseJson", responseJson);
         if (responseJson.success == true) {
           self.setState(responseJson.body);
           self._attachBooks(responseJson.body.books);
@@ -71,7 +72,7 @@ export default class Profile extends Component {
   }
 
   _onPressRow(rowData) {
-    this.props.navigatorMain.push({name: "BookDetail", passProps: {rowData}});
+    this.props.navigatorMain.push({name: "BookDetail", passProps: {bookId: rowData.id}});
   }
 
   _renderRowBook(rowData) {

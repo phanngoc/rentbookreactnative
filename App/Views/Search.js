@@ -76,7 +76,6 @@ export default class Search extends Component {
 
   async onChange(text) {
     this.setState({text: text});
-    console.log("onChange", text, this.refs.listResults);
     this.refs.listResults._refresh();
     // this.refs.listResults._postRefresh(null, {external: true});
   }

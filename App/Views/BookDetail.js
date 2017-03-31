@@ -42,7 +42,7 @@ export default class BookDetail extends Component {
   async componentDidMount() {
     var self = this;
     let token = await AsyncStorage.getItem('token');
-    fetch(BASE_URL + '/api/books/5', {
+    fetch(BASE_URL + '/api/books/' + this.props.bookId, {
       method: 'GET',
       headers: {
         'Accept': 'application/json',
@@ -79,6 +79,7 @@ export default class BookDetail extends Component {
       <View style={styles.itemComment}>
         <View style={styles.wrProfile}>
           <Image style={styles.itemCommentAvatar}
+            resizeMode="contain"
             source={{uri: rowComment.user.avatar}} />
           <View style={styles.infoComment}>
             <Text style={styles.infoCommentName}>

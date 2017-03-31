@@ -68,11 +68,14 @@ export default class Nearest extends Component {
     _.forEach(this.state.books, function(book, key) {
       let pos = {latitude: book.user.locations[0].lat,
         longitude: book.user.locations[0].lng};
+      let linkImageBook = book.images.length != 0 ? {uri: book.images[0].link} :
+        require('../../img/cover-image.jpg');
       let marker = (<MapView.Marker
         key={key}
         coordinate={pos}
         title={book.title}
         description={book.description}
+      
         />)
         compoMarker.push(marker);
     });

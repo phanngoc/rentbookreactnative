@@ -21,12 +21,14 @@ import {
   Animated,
   Button
 } from 'react-native';
+
 import Nearest from './App/Components/Nearest'
 import Menu from './App/Components/Menu'
 import BookDetail from './App/Views/BookDetail'
 import CreateBook from './App/Views/CreateBook'
 import GlobalMenu from './App/Components/GlobalMenu'
 import Search from './App/Views/Search'
+import Trending from './App/Views/Trending'
 
 export default class AwesomeProject extends Component {
 
@@ -52,7 +54,7 @@ export default class AwesomeProject extends Component {
          <Menu tabLabel='Profile' navigatorMain={navigator}
            {...route.passProps}/>
          <Nearest tabLabel='Nearest'/>
-         <Text tabLabel='Trending'>favorite</Text>
+         <Trending tabLabel='Trending' navigatorMain={navigator} />
          <Search tabLabel='Search' navigatorMain={navigator}></Search>
       </ScrollableTabView>);
     } else if (route.name == 'BookDetail') {

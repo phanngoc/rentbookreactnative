@@ -53,7 +53,7 @@ export default class AwesomeProject extends Component {
       >
          <Menu tabLabel='Profile' navigatorMain={navigator}
            {...route.passProps}/>
-         <Nearest tabLabel='Nearest'/>
+         <Nearest tabLabel='Nearest' navigatorMain={navigator} />
          <Trending tabLabel='Trending' navigatorMain={navigator} />
          <Search tabLabel='Search' navigatorMain={navigator}></Search>
       </ScrollableTabView>);

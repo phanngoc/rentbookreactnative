@@ -16,6 +16,7 @@ import {
 import MapView from 'react-native-maps';
 import Tabs from 'react-native-tabs';
 import {BASE_URL} from '../const';
+import SocketIOClient from 'socket.io-client/dist/socket.io';
 
 export default class Profile extends Component {
   constructor() {
@@ -29,6 +30,17 @@ export default class Profile extends Component {
       dataSourceBooks: ds.cloneWithRows([]),
       dataSourceBooksBorrow: ds.cloneWithRows([])
     }
+
+    // this.socket = new WebSocket('wss://192.168.1.103:3000');
+    // this.socket.onopen = () => {
+    //   // connection opened
+    //   console.log("open connection")
+
+    // };
+    this.socket = SocketIOClient('http://192.168.1.103:3000', {jsonp: false});
+    this.socket.on('news', (msg) =>{
+      console.log('receive response', msg);
+    });
   }
 
   componentDidMount() {

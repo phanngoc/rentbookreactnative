@@ -12,10 +12,56 @@ import {
   StyleSheet,
   Text,
   View,
-  TouchableOpacity
+  TouchableOpacity,
+  Image
 } from 'react-native';
 
 import {BASE_URL} from '../const';
+
+const stylesCusMar = StyleSheet.create({
+  container: {
+    flex: 1,
+    flexDirection: "column",
+    alignSelf: 'flex-start'
+  },
+  imageBook: {
+    width: 48,
+    height: 48
+  },
+  title: {
+    fontWeight: 'bold',
+    fontSize: 16
+  },
+  description:{
+
+  }
+});
+
+class CustomMarkerView extends Component {
+  constructor() {
+    super();
+    this.state = {
+
+    };
+  }
+
+  componentWillMount() {
+  }
+
+  render() {
+    return (
+      <View style={stylesCusMar.container}>
+        <Image style={stylesCusMar.imageBook} source={this.props.linkImageBook} />
+        <Text style={stylesCusMar.title}>
+          {this.props.title}
+        </Text>
+        <Text style={stylesCusMar.description}>
+          {this.props.description}
+        </Text>
+      </View>
+    );
+  }
+}
 
 export default class Nearest extends Component {
 
@@ -31,6 +77,13 @@ export default class Nearest extends Component {
 
   componentDidMount() {
     this.fetchData();
+  }
+
+  shouldComponentUpdate(nextProps, nextState) {
+    if (_.isEqual(nextState.books, this.state.books)) {
+      return false;
+    }
+    return true;
   }
 
   fetchData() {
@@ -64,19 +117,35 @@ export default class Nearest extends Component {
   }
 
   buildMarker() {
+    console.log("buildMarker");
+    let self = this;
     let compoMarker = [];
     _.forEach(this.state.books, function(book, key) {
       let pos = {latitude: book.user.locations[0].lat,
         longitude: book.user.locations[0].lng};
-      let linkImageBook = book.images.length != 0 ? {uri: book.images[0].link} :
-        require('../../img/cover-image.jpg');
-      let marker = (<MapView.Marker
-        key={key}
-        coordinate={pos}
-        title={book.title}
-        description={book.description}
-      
-        />)
+      if (book.images.length != 0) {
+        let link = book.images[0].link;
+        if (!_.startsWith(link, 'http')) {
+          book.linkImageBook = {uri: BASE_URL + '/uploads/' + link};
+        } else {
+          book.linkImageBook = {uri: link};
+        }
+      } else {
+        book.linkImageBook = require('../../img/cover-image.jpg');
+      }
+
+      let marker = (
+        <MapView.Marker
+          key={key}
+          coordinate={pos}
+          onCalloutPress={() => {
+              self.props.navigatorMain.push({name: "BookDetail", passProps: {bookId: book.id}});
+            }}
+          >
+          <MapView.Callout>
+            <CustomMarkerView {...book} />
+          </MapView.Callout>
+        </MapView.Marker>)
         compoMarker.push(marker);
     });
     return compoMarker;

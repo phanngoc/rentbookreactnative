@@ -29,6 +29,7 @@ import CreateBook from './App/Views/CreateBook'
 import GlobalMenu from './App/Components/GlobalMenu'
 import Search from './App/Views/Search'
 import Trending from './App/Views/Trending'
+import Chat from './App/Views/Chat'
 
 export default class AwesomeProject extends Component {
 
@@ -61,7 +62,10 @@ export default class AwesomeProject extends Component {
       innerView = <BookDetail navigatorMain={navigator} {...route.passProps} />
     } else if (route.name == 'CreateBook') {
       innerView = <CreateBook navigatorMain={navigator} {...route.passProps} />
+    } else if (route.name == 'Chat') {
+      innerView = <Chat navigatorMain={navigator} {...route.passProps} />
     }
+
     return (<View style={{flex: 1}}>
       <GlobalMenu navigatorMain={navigator} />
       {innerView}

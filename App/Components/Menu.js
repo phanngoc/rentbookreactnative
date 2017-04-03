@@ -66,7 +66,6 @@ export default class Menu extends Component {
 
   constructor() {
     super();
-    let self = this;
     this.state = {
       initialRoute: {name: 'Waiting', passProps: {}}
     };

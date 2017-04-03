@@ -23,6 +23,7 @@ import {BASE_URL} from '../const';
 import Swiper from 'react-native-swiper';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import Modal from 'react-native-modalbox';
+import Communications from 'react-native-communications';
 
 export default class BookDetail extends Component {
   constructor() {
@@ -119,7 +120,7 @@ export default class BookDetail extends Component {
     Keyboard.dismiss();
     let self = this;
     let token = await AsyncStorage.getItem('token');
-    fetch(BASE_URL + '/api/books/5/comments', {
+    fetch(BASE_URL + '/api/books/' + this.props.bookId + '/comments', {
       method: 'POST',
       headers: {
         'Accept': 'application/json',
@@ -141,7 +142,6 @@ export default class BookDetail extends Component {
   }
 
   async onPressShare() {
-    console.log("onPress share");
     let btnWantOk = require('../../img/Button-Check-512.png');
     let token = await AsyncStorage.getItem('token');
     let self = this;
@@ -176,7 +176,7 @@ export default class BookDetail extends Component {
   render() {
     return (
         <Image source={require('../../img/subtle-vertical-stripes.png')}
-          style={styles.ge}>
+          style={styles.backgroundImage}>
           <View style={styles.container}>
             <Swiper style={styles.wrapperImages} showsButtons={true} height={200}
               horizontal={true} autoplay>
@@ -201,6 +201,25 @@ export default class BookDetail extends Component {
                 source={{uri: this.state.user.avatar}}
               />
               <Text style={styles.name}>{this.state.user.name}</Text>
+            </View>
+            <View style={styles.communications}>
+              <TouchableOpacity onPress={() => Communications.phonecall('0123456789', true)}>
+                <Icon name="phone" size={30} color="#e0c564"
+                  style={styles.holder} />
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => Communications.email(['emailAddress1', 'emailAddress2'], null, null, 'My Subject', 'My body text')}>
+                <Icon name="reply" size={30} color="#e0c564"
+                  style={styles.holder} />
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => Communications.text('0123456789')}>
+                <Icon name="comment-o" size={30} color="#e0c564"
+                  style={styles.holder} />
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => this.props.navigatorMain.push({name: 'Chat', passProps: {user: this.state.user}})}>
+                <Icon name="weixin" size={30} color="#e0c564"
+                  style={styles.holder} />
+              </TouchableOpacity>
+
             </View>
             <View style={styles.wrComment}>
               <View style={styles.wrCommentLabel}>
@@ -250,6 +269,22 @@ export default class BookDetail extends Component {
 }
 
 const styles = StyleSheet.create({
+
+  communications: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: 'center',
+    backgroundColor: 'rgb(253,253,253)'
+  },
+
+  holder: {
+    padding: 4,
+    backgroundColor: "#cbebf2",
+    borderRadius: 4,
+    marginLeft: 6,
+    minWidth: 40
+  },
+
   // Action share
   actionControl: {
     flexDirection: 'row',
@@ -298,8 +333,6 @@ const styles = StyleSheet.create({
 
  // Style list comment
   modalComment: {
-    // justifyContent: 'center',
-    // alignItems: 'center',
     height: 200
   },
   wrProfile: {
@@ -346,10 +379,9 @@ const styles = StyleSheet.create({
   },
   wrCommentLabel: {
     flexDirection: 'row',
+    justifyContent: 'space-between',
   },
   wrCommentLabelText: {
-    flex: 1,
-    justifyContent: 'space-between',
     fontWeight: 'bold',
     color: '#91781d',
     paddingLeft: 4,

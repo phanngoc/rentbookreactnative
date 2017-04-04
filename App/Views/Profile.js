@@ -45,7 +45,6 @@ export default class Profile extends Component {
       })
       .then((response) => response.json())
       .then(function(responseJson) {
-        console.log("responseJson", responseJson);
         if (responseJson.success == true) {
           self.setState(responseJson.body);
           self._attachBooks(responseJson.body.books);

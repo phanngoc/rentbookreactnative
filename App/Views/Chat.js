@@ -41,28 +41,58 @@ export default class Chat extends Component {
     };
   }
 
+  convertListWithKey_Id(messages, user_id = undefined) {
+    var messagesArr;
+    messagesArr = _.filter(messages, function(o) {
+      return o.user.id != user_id;
+    });
+
+    messagesArr = _.map(messagesArr, function(value, index) {
+      var res = value;
+      res._id = value.id;
+      res.user._id = res.user.id;
+      return res;
+    }).reverse();
+
+    return messagesArr;
+  }
+
   componentWillMount() {
     var self = this;
     AsyncStorage.getItem('token', function(error, result) {
-      self.socket = SocketIOClient(BASE_SOCK_URL, {transports: ['websocket'], query: 'token=' + result + '&user_id' + this.props.user.id});
-      self.socket.on('new_message', (msg) =>{
-        console.log('receive response', msg);
+      self.socket = SocketIOClient(BASE_SOCK_URL, {transports: ['websocket'], query: 'token=' + result + '&user_id=' + self.props.user.id});
+
+      self.socket.on('connect', function() {
+        console.log('socket connect', self.socket.connected);
+      });
+
+      self.socket.on('disconnect', function() {
+        console.log('socket disconnect', self.socket.connected);
+      });
+
+      self.socket.on('userCurrent', (user) => {
+        console.log('userCurrent', user);
+        self.userCurrent = user;
+      })
+
+      self.socket.on('messages', (messages) => {
+        var messageConvert = self.convertListWithKey_Id(messages);
+        var messagesArray = GiftedChat.append(self.state.messages, messageConvert);
+        self.setState({messages: messagesArray});
+      });
+
+      self.socket.on('broadcast_message', (message) => {
+        console.log("message receive client", [message]);
+        var messageConvert = self.convertListWithKey_Id([message], self.userCurrent.id);
+        console.log("messagesArray client", messageConvert);
+        var messagesArray = GiftedChat.append(self.state.messages, messageConvert);
+        self.setState({messages: messagesArray});
       });
     });
-    this.setState({
-      messages: [
-        {
-          _id: 1,
-          text: 'Hello developer',
-          createdAt: new Date(Date.UTC(2016, 7, 30, 17, 20, 0)),
-          user: {
-            _id: 2,
-            name: 'React Native',
-            avatar: 'https://facebook.github.io/react/img/logo_og.png',
-          },
-        },
-      ],
-    });
+  }
+
+  componentWillUnmount() {
+    this.socket.close();
   }
 
   /**
@@ -71,7 +101,7 @@ export default class Chat extends Component {
    */
   onSend(messages=[]) {
     console.log("onSend", messages);
-    this.socket.emit('message', messages[0]);
+    this.socket.emit('receive_new_message', messages[0]);
     this._storeMessages(messages);
   }
 
@@ -89,7 +119,7 @@ export default class Chat extends Component {
       <GiftedChat
         messages={this.state.messages}
         onSend={this.onSend.bind(this)}
-        user={{_id: 1}}
+        user={this.props.user}
       />
     );
   }

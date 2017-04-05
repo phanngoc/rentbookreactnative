@@ -24,6 +24,8 @@ import {
 import { GiftedChat } from 'react-native-gifted-chat';
 import { BASE_SOCK_URL } from '../const';
 import SocketIOClient from 'socket.io-client';
+import FCM, {FCMEvent, RemoteNotificationResult, WillPresentNotificationResult, NotificationType} from 'react-native-fcm';
+import uuid from 'react-native-uuid';
 
 const styles = StyleSheet.create({
 
@@ -39,6 +41,7 @@ export default class Chat extends Component {
     this.state = {
       messages: []
     };
+
   }
 
   convertListWithKey_Id(messages, user_id = undefined) {
@@ -71,22 +74,41 @@ export default class Chat extends Component {
       });
 
       self.socket.on('userCurrent', (user) => {
-        console.log('userCurrent', user);
         self.userCurrent = user;
       })
 
       self.socket.on('messages', (messages) => {
         var messageConvert = self.convertListWithKey_Id(messages);
-        var messagesArray = GiftedChat.append(self.state.messages, messageConvert);
-        self.setState({messages: messagesArray});
+        self.setState({messages: messageConvert});
       });
 
       self.socket.on('broadcast_message', (message) => {
-        console.log("message receive client", [message]);
         var messageConvert = self.convertListWithKey_Id([message], self.userCurrent.id);
-        console.log("messagesArray client", messageConvert);
         var messagesArray = GiftedChat.append(self.state.messages, messageConvert);
         self.setState({messages: messagesArray});
+
+        FCM.presentLocalNotification({
+            title: "New message",                     // as FCM payload
+            body: message.text,                    // as FCM payload (required)
+            sound: "default",                                   // as FCM payload
+            priority: "high",                                   // as FCM payload
+            click_action: "ACTION",                             // as FCM payload
+            badge: 10,                                          // as FCM payload IOS only, set 0 to clear badges
+            number: 10,                                         // Android only
+            ticker: "My Notification Ticker",                   // Android only
+            auto_cancel: true,                                  // Android only (default true)
+            large_icon: "ic_launcher",                           // Android only
+            icon: "ic_launcher",                                // as FCM payload, you can relace this with custom icon you put in mipmap
+            big_text: "Click to show chat directly",     // Android only
+            sub_text: "This is message chat",                      // Android only
+            color: "red",                                       // Android only
+            vibrate: 300,                                       // Android only default: 300, no vibration if you pass null
+            tag: 'some_tag',                                    // Android only
+            group: "group",                                     // Android only
+            my_custom_data:'my_custom_field_value',             // extra data you want to throw
+            lights: true,                                       // Android only, LED blinking (default false)
+        });
+
       });
     });
   }

@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "39058167660",
+    "firebase_url": "https://rentbook-b7ec6.firebaseio.com",
+    "project_id": "rentbook-b7ec6",
+    "storage_bucket": "rentbook-b7ec6.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:39058167660:android:bdda3018bb58ca0a",
+        "android_client_info": {
+          "package_name": "com.awesomeproject"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "39058167660-3nd483jtilbln0f3eliima11rb9jma60.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAKtn0LF-ZHf-6FZmDnCmL3p1sKqcAA5k0"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -22,6 +22,8 @@ import {
   Button
 } from 'react-native';
 
+import FCM, {FCMEvent, RemoteNotificationResult, WillPresentNotificationResult, NotificationType} from 'react-native-fcm';
+
 import Nearest from './App/Components/Nearest'
 import Menu from './App/Components/Menu'
 import BookDetail from './App/Views/BookDetail'
@@ -30,6 +32,7 @@ import GlobalMenu from './App/Components/GlobalMenu'
 import Search from './App/Views/Search'
 import Trending from './App/Views/Trending'
 import Chat from './App/Views/Chat'
+import {BASE_URL, BASE_SOCK_URL} from './App/const'
 
 export default class AwesomeProject extends Component {
 
@@ -39,6 +42,42 @@ export default class AwesomeProject extends Component {
       initialRoute: {name: "Main", passProps: {}},
       isExpand: false,
     }
+  }
+
+  componentWillMount() {
+    FCM.getFCMToken().then(token => {
+    //   AsyncStorage.getItem('token', function(error, result) {
+    //     fetch(BASE_URL + '/api/users/update-token', {
+    //       method: 'POST',
+    //       headers: {
+    //         'Accept': 'application/json',
+    //         'Content-Type': 'application/json',
+    //         'x-access-token': result
+    //       },
+    //       body: JSON.stringify({
+    //         'device_token': token
+    //       })
+    //     })
+    //     .then((response) => response.json())
+    //     .then(function(responseJson) {
+
+    //     }).catch(function(error) {
+    //       console.log("error", error);
+    //     })
+    //   });
+    //   AsyncStorage.setItem('device_token', token);
+    // });
+
+    this.notificationListener = FCM.on(FCMEvent.Notification, async (notif) => {
+      console.log('notificationListener', notif)
+        // there are two parts of notif. notif.notification contains the notification payload, notif.data contains data payload
+      if(notif.local_notification){
+        //this is a local notification
+      }
+      if(notif.opened_from_tray){
+        //app is open/resumed because user clicked banner
+      }
+    });
   }
 
   componentDidMount() {

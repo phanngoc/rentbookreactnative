@@ -42,40 +42,54 @@ export default class AwesomeProject extends Component {
       initialRoute: {name: "Main", passProps: {}},
       isExpand: false,
     }
+    this.navigator = null;
   }
 
-  componentWillMount() {
-    FCM.getFCMToken().then(token => {
-    //   AsyncStorage.getItem('token', function(error, result) {
-    //     fetch(BASE_URL + '/api/users/update-token', {
-    //       method: 'POST',
-    //       headers: {
-    //         'Accept': 'application/json',
-    //         'Content-Type': 'application/json',
-    //         'x-access-token': result
-    //       },
-    //       body: JSON.stringify({
-    //         'device_token': token
-    //       })
-    //     })
-    //     .then((response) => response.json())
-    //     .then(function(responseJson) {
+  async componentWillMount() {
+    var self = this;
+    try {
+      const device_token = await AsyncStorage.getItem('device_token');
+      if (device_token == null){
+        FCM.getFCMToken().then(token => {
+          AsyncStorage.getItem('token', function(error, result) {
+            fetch(BASE_URL + '/api/users/update-token', {
+              method: 'POST',
+              headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+                'x-access-token': result
+              },
+              body: JSON.stringify({
+                'device_token': token
+              })
+            })
+            .then((response) => response.json())
+            .then(function(responseJson) {
 
-    //     }).catch(function(error) {
-    //       console.log("error", error);
-    //     })
-    //   });
-    //   AsyncStorage.setItem('device_token', token);
-    // });
+            }).catch(function(error) {
+              console.log("error", error);
+            })
+          });
+          AsyncStorage.setItem('device_token', token);
+        });
+      }
+    } catch (error) {
+      console.log("Error get or set device token.", error);
+    }
 
     this.notificationListener = FCM.on(FCMEvent.Notification, async (notif) => {
       console.log('notificationListener', notif)
         // there are two parts of notif. notif.notification contains the notification payload, notif.data contains data payload
+
       if(notif.local_notification){
         //this is a local notification
       }
       if(notif.opened_from_tray){
-        //app is open/resumed because user clicked banner
+        this.navigator.immediatelyResetRouteStack([
+          {name: "Main", passProps: {}},
+          {name: "BookDetail", passProps: {bookId: notif.data.book_id}}
+        ]);
+        self.navigator.push({name: "Chat", passProps: {book_id: notif.data.book_id, user: notif.data.user}});
       }
     });
   }
@@ -85,6 +99,7 @@ export default class AwesomeProject extends Component {
   }
 
   renderScene(route, navigator) {
+    this.navigator = navigator;
     let innerView;
     if (route.name == 'Main') {
       innerView = (<ScrollableTabView

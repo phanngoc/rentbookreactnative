@@ -215,7 +215,7 @@ export default class BookDetail extends Component {
                 <Icon name="comment-o" size={30} color="#e0c564"
                   style={styles.holder} />
               </TouchableOpacity>
-              <TouchableOpacity onPress={() => this.props.navigatorMain.push({name: 'Chat', passProps: {user: this.state.user}})}>
+              <TouchableOpacity onPress={() => this.props.navigatorMain.push({name: 'Chat', passProps: {user: this.state.user, book_id: this.state.id}})}>
                 <Icon name="weixin" size={30} color="#e0c564"
                   style={styles.holder} />
               </TouchableOpacity>

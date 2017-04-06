@@ -123,6 +123,7 @@ export default class Chat extends Component {
    */
   onSend(messages=[]) {
     console.log("onSend", messages);
+    messages[0].book_id = this.props.book_id;
     this.socket.emit('receive_new_message', messages[0]);
     this._storeMessages(messages);
   }

@@ -49,7 +49,7 @@ export default class AwesomeProject extends Component {
     var self = this;
     try {
       const device_token = await AsyncStorage.getItem('device_token');
-      if (device_token == null){
+      if (device_token == null) {
         FCM.getFCMToken().then(token => {
           AsyncStorage.getItem('token', function(error, result) {
             fetch(BASE_URL + '/api/users/update-token', {
@@ -77,20 +77,29 @@ export default class AwesomeProject extends Component {
       console.log("Error get or set device token.", error);
     }
 
-    this.notificationListener = FCM.on(FCMEvent.Notification, async (notif) => {
-      console.log('notificationListener', notif)
-        // there are two parts of notif. notif.notification contains the notification payload, notif.data contains data payload
+    // this.notificationListener = FCM.on(FCMEvent.Notification, async (notif) => {
+    //   console.log('notificationListener', notif, RemoteNotificationResult.NewData, WillPresentNotificationResult.All);
+    //     // there are two parts of notif. notif.notification contains the notification payload, notif.data contains data payload
 
-      if(notif.local_notification){
-        //this is a local notification
-      }
-      if(notif.opened_from_tray){
-        this.navigator.immediatelyResetRouteStack([
-          {name: "Main", passProps: {}},
-          {name: "BookDetail", passProps: {bookId: notif.data.book_id}}
-        ]);
-        self.navigator.push({name: "Chat", passProps: {book_id: notif.data.book_id, user: notif.data.user}});
-      }
+    //   // if(notif.local_notification){
+    //   //   //this is a local notification
+    //   // }
+    //   // if(notif.opened_from_tray){
+    //     this.navigator.immediatelyResetRouteStack([
+    //       {name: "Main", passProps: {}},
+    //       {name: "BookDetail", passProps: {bookId: notif.book_id}}
+    //     ]);
+    //     self.navigator.push({name: "Chat", passProps: {book_id: notif.book_id, user: notif.user}});
+    //   // }
+    // });
+
+    FCM.getInitialNotification().then(notif => {
+      console.log('notificationListener', notif, RemoteNotificationResult.NewData, WillPresentNotificationResult.All);
+      this.navigator.immediatelyResetRouteStack([
+        {name: "Main", passProps: {}},
+        {name: "BookDetail", passProps: {bookId: notif.book_id}}
+      ]);
+      self.navigator.push({name: "Chat", passProps: {book_id: notif.book_id, user: JSON.parse(notif.user)}});
     });
   }
 
@@ -121,8 +130,8 @@ export default class AwesomeProject extends Component {
     }
 
     return (<View style={{flex: 1}}>
-      <GlobalMenu navigatorMain={navigator} />
       {innerView}
+      <GlobalMenu navigatorMain={navigator} />
     </View>);
   }
 

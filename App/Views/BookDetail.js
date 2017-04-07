@@ -36,13 +36,18 @@ export default class BookDetail extends Component {
       images: [],
       dataSourceComments: ds.cloneWithRows([]),
       comments: [],
-      imgBtnControl: require('../../img/borrow-512.png')
+      imgBtnControl: require('../../img/borrow-512.png'),
+      currentUser: {}
     }
   }
 
   async componentDidMount() {
     var self = this;
     let token = await AsyncStorage.getItem('token');
+    let currentUser = await AsyncStorage.getItem('user');
+    console.log('currentUser', currentUser);
+    this.setState({currentUser: currentUser});
+
     fetch(BASE_URL + '/api/books/' + this.props.bookId, {
       method: 'GET',
       headers: {
@@ -61,7 +66,7 @@ export default class BookDetail extends Component {
           require('../../img/borrow-512.png');
         let imgBtnControl = (self.state.type == 2) ? require('../../img/Remove-128.png') :
           imgBtnControlTe;
-        self.setState({imgBtnControl: imgBtnControl})
+        self.setState({imgBtnControl: imgBtnControl});
       }
     });
   }
@@ -170,10 +175,22 @@ export default class BookDetail extends Component {
       ],
       { cancelable: false }
     )
-
   }
 
   render() {
+    let chatComponent;
+    if (currentUser.id == this.state.user.id) {
+      chatComponent = (<TouchableOpacity onPress={() => this.props.navigatorMain.push({name: 'ListChat', passProps: {user: currentUser, book_id: this.props.bookId}})}>
+                <Icon name="weixin" size={30} color="#e0c564"
+                  style={styles.holder} />
+              </TouchableOpacity>);
+    } else {
+      chatComponent = (<TouchableOpacity onPress={() => this.props.navigatorMain.push({name: 'Chat', passProps: {user: this.state.user, book_id: this.props.bookId}})}>
+                <Icon name="weixin" size={30} color="#e0c564"
+                  style={styles.holder} />
+              </TouchableOpacity>);
+    }
+
     return (
         <Image source={require('../../img/subtle-vertical-stripes.png')}
           style={styles.backgroundImage}>
@@ -215,11 +232,7 @@ export default class BookDetail extends Component {
                 <Icon name="comment-o" size={30} color="#e0c564"
                   style={styles.holder} />
               </TouchableOpacity>
-              <TouchableOpacity onPress={() => this.props.navigatorMain.push({name: 'Chat', passProps: {user: this.state.user, book_id: this.state.id}})}>
-                <Icon name="weixin" size={30} color="#e0c564"
-                  style={styles.holder} />
-              </TouchableOpacity>
-
+              {chatComponent}
             </View>
             <View style={styles.wrComment}>
               <View style={styles.wrCommentLabel}>

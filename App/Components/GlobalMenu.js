@@ -31,7 +31,7 @@ export default class GlobalMenu extends Component {
     }
 
     this.btnPlus = null;
-    this._previousLeft = widthWindow - 48;
+    this._previousLeft = widthWindow - 148;
     this._previousTop = 0;
     this.animRotate = this.animRotate || new Animated.Value(0);
     this.animMenuOpa = this.animMenuOpa || new Animated.Value(0);
@@ -119,12 +119,12 @@ export default class GlobalMenu extends Component {
 
   onPressPlus() {
     if (this.state.isExpand) {
-     Animated.timing(
+      Animated.timing(
          this.animRotate,
          {toValue: 0, duration: 500}
        ).start();
 
-     Animated.parallel([
+      Animated.parallel([
         Animated.timing(this.animMenuOpa, {
           toValue: 0,
           duration: 500
@@ -133,7 +133,7 @@ export default class GlobalMenu extends Component {
           toValue: 0,
           duration: 500
         })
-     ]).start();
+      ]).start();
 
      let self = this;
 
@@ -142,6 +142,7 @@ export default class GlobalMenu extends Component {
         self.setState({isExpand: !self.state.isExpand});
       }, 500);
 
+     this.menuBlock.setNativeProps({style: {opacity: 0, zIndex: -10}});
     } else {
       Animated.timing(
          this.animRotate,
@@ -158,50 +159,19 @@ export default class GlobalMenu extends Component {
             duration: 500
           })
        ]).start();
-       this.setState({isExpand: !this.state.isExpand});
+
+      this.setState({isExpand: !this.state.isExpand});
+      this.menuBlock.setNativeProps({style: {opacity: 1, zIndex: 999999}});
     }
   }
 
   render() {
     var currentRoute = this.props.navigatorMain.getCurrentRoutes().pop();
-    console.log("currentRoute", currentRoute);
 
     if (currentRoute.name == "CreateBook") {
       this.state.isDisBtnCreate = true;
     } else {
       this.state.isDisBtnCreate = false;
-    }
-
-    let menuBlock = (
-      <View style={styles.menu}>
-        <Animated.View
-           style={{
-             transform: [
-               {
-                 translateY: this.animMenuTran.interpolate({
-                   inputRange: [0, 1],
-                   outputRange: [
-                     1, 10
-                   ],
-                 })
-               }
-             ],
-            opacity: this.animMenuOpa
-           }}>
-          <View style={styles.menuCreateBook}>
-            <Button style={styles.menuCreateBook} onPress={() => this.props.navigatorMain.push({name: 'CreateBook'})}
-              title="Create book"
-              disabled={this.state.isDisBtnCreate}
-              ></Button>
-          </View>
-        </Animated.View>
-      </View>
-    );
-
-    let menuView = (<View></View>);
-
-    if (this.state.isExpand == true) {
-      menuView = menuBlock;
     }
 
     return (
@@ -211,19 +181,43 @@ export default class GlobalMenu extends Component {
         }}
         {...this._panResponder.panHandlers}
         >
-        {menuView}
-        <TouchableOpacity onPress={this.onPressPlus.bind(this)} >
+        <View style={styles.menu} ref={(menuBlock) => {
+          this.menuBlock = menuBlock;
+        }}>
           <Animated.View
-             style={{
-               transform: [   // Array order matters
-                 {rotate: this.animRotate.interpolate({
+            style={{
+             transform: [
+               {
+                 translateY: this.animMenuTran.interpolate({
                    inputRange: [0, 1],
                    outputRange: [
-                     '0deg', '90deg' // 'deg' or 'rad'
+                     1, 10
                    ],
-                 })},
-               ]
-             }}>
+                 })
+               }
+              ],
+              opacity: this.animMenuOpa
+            }}>
+            <View style={styles.menuCreateBook}>
+              <Button style={styles.menuCreateBook} onPress={() => this.props.navigatorMain.push({name: 'CreateBook'})}
+                title="Create book"
+                disabled={this.state.isDisBtnCreate}
+                ></Button>
+            </View>
+          </Animated.View>
+        </View>
+        <TouchableOpacity onPress={this.onPressPlus.bind(this)} >
+          <Animated.View
+            style={{
+             transform: [   // Array order matters
+               {rotate: this.animRotate.interpolate({
+                 inputRange: [0, 1],
+                 outputRange: [
+                   '0deg', '90deg' // 'deg' or 'rad'
+                 ],
+               })},
+             ]
+          }}>
            <Image style={styles.imagePlus}
              source={require('../../img/plusgoogle.png')} />
           </Animated.View>
@@ -240,15 +234,17 @@ const styles = StyleSheet.create({
   menu: {
     justifyContent: 'space-around',
     flexDirection: 'column',
-    marginTop: -10
+    marginTop: -10,
+    opacity: 0,
+    zIndex: -10
   },
   btnCreate: {
     position: 'absolute',
     top: 0,
-    left: widthWindow - 48,
-    zIndex: 100,
+    left: widthWindow - 148,
     justifyContent: 'flex-start',
-    flexDirection: 'row'
+    flexDirection: 'row',
+    zIndex: 0
   },
   imagePlus: {
     width: 48,

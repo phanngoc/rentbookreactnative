@@ -63,7 +63,8 @@ export default class Chat extends Component {
   componentWillMount() {
     var self = this;
     AsyncStorage.getItem('token', function(error, result) {
-      self.socket = SocketIOClient(BASE_SOCK_URL, {transports: ['websocket'], query: 'token=' + result + '&user_id=' + self.props.user.id});
+      self.socket = SocketIOClient(BASE_SOCK_URL, {transports: ['websocket'], query: 'token=' + result
+        + '&user_id=' + self.props.user.id + '&book_id=' + self.props.book_id});
 
       self.socket.on('connect', function() {
         console.log('socket connect', self.socket.connected);
@@ -123,7 +124,6 @@ export default class Chat extends Component {
    */
   onSend(messages=[]) {
     messages[0].book_id = this.props.book_id;
-    console.log("onSend message", messages[0]);
     this.socket.emit('receive_new_message', messages[0]);
     this._storeMessages(messages);
   }

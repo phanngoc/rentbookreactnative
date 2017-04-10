@@ -13,6 +13,8 @@ import {
   Button
 } from 'react-native';
 
+import FCM, {FCMEvent, RemoteNotificationResult, WillPresentNotificationResult, NotificationType} from 'react-native-fcm';
+
 var Form = t.form.Form;
 // here we are: define your domain model
 var SigninForm = t.struct({
@@ -43,6 +45,32 @@ export default class Signin extends Component {
 
   }
 
+  setDeviveToken(token) {
+    FCM.getFCMToken().then(device_token => {
+      fetch(BASE_URL + '/api/users/update-token', {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+          'x-access-token': token
+        },
+        body: JSON.stringify({
+          'device_token': device_token
+        })
+      })
+      .then((response) => response.json())
+      .then(function(responseJson) {
+
+      }).catch(function(error) {
+        console.log("error", error);
+      })
+      AsyncStorage.setItem('device_token', device_token);
+    })
+    .catch(function(error) {
+      console.log(error);
+    });
+  }
+
   onPress() {
     var value = this.refs.form.getValue();
     var self = this;
@@ -63,10 +91,8 @@ export default class Signin extends Component {
           name: 'Profile',
           passProps: {}
         });
+        self.setDeviveToken(responseJson.body.token);
       })
-      .catch(function(error) {
-        console.log(error);
-      });
     }
   }
 

@@ -41,12 +41,12 @@ export default class BookDetail extends Component {
     }
   }
 
-  async componentDidMount() {
+  async componentWillMount() {
     var self = this;
     let token = await AsyncStorage.getItem('token');
     let currentUser = await AsyncStorage.getItem('user');
-    console.log('currentUser', currentUser);
-    this.setState({currentUser: currentUser});
+    currentUser = JSON.parse(currentUser);
+    this.setState({currentUser: currentUser, token: token});
 
     fetch(BASE_URL + '/api/books/' + this.props.bookId, {
       method: 'GET',
@@ -179,8 +179,8 @@ export default class BookDetail extends Component {
 
   render() {
     let chatComponent;
-    if (currentUser.id == this.state.user.id) {
-      chatComponent = (<TouchableOpacity onPress={() => this.props.navigatorMain.push({name: 'ListChat', passProps: {user: currentUser, book_id: this.props.bookId}})}>
+    if (this.state.currentUser.id == this.state.user.id) {
+      chatComponent = (<TouchableOpacity onPress={() => this.props.navigatorMain.push({name: 'ListChat', passProps: {token: this.state.token, user: this.state.currentUser, book_id: this.props.bookId}})}>
                 <Icon name="weixin" size={30} color="#e0c564"
                   style={styles.holder} />
               </TouchableOpacity>);

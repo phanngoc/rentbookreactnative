@@ -60,11 +60,10 @@ export default class Signin extends Component {
       })
       .then((response) => response.json())
       .then(function(responseJson) {
-
+        AsyncStorage.setItem('device_token', device_token);
       }).catch(function(error) {
         console.log("error", error);
       })
-      AsyncStorage.setItem('device_token', device_token);
     })
     .catch(function(error) {
       console.log(error);

@@ -51,35 +51,6 @@ export default class AwesomeProject extends Component {
     var self = this;
     var userCurrent = await AsyncStorage.getItem('user');
     var token = await AsyncStorage.getItem('token');
-    var device_token = await AsyncStorage.getItem('device_token');
-    try {
-      if (device_token == null) {
-        FCM.getFCMToken().then(token => {
-          AsyncStorage.getItem('token', function(error, result) {
-            fetch(BASE_URL + '/api/users/update-token', {
-              method: 'POST',
-              headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json',
-                'x-access-token': result
-              },
-              body: JSON.stringify({
-                'device_token': token
-              })
-            })
-            .then((response) => response.json())
-            .then(function(responseJson) {
-
-            }).catch(function(error) {
-              console.log("error", error);
-            })
-          });
-          AsyncStorage.setItem('device_token', token);
-        });
-      }
-    } catch (error) {
-      console.log("Error get or set device token.", error);
-    }
 
     this.notificationListener = FCM.on(FCMEvent.Notification, async (notif) => {
 
@@ -89,17 +60,17 @@ export default class AwesomeProject extends Component {
       console.log("refreshTokenListener", token);
     });
 
-    FCM.getInitialNotification().then(notif => {
-      // console.log('notificationListener', notif, RemoteNotificationResult.NewData, WillPresentNotificationResult.All);
-      if (notif.book_id) {
-        self.navigator.immediatelyResetRouteStack([
-          {name: "Main", passProps: {}},
-          {name: "BookDetail", passProps: {bookId: notif.book_id}},
-          {name: "ListChat", passProps: {token: token, user: JSON.parse(userCurrent), book_id: notif.book_id}}
-        ]);
-        self.navigator.push({name: "Chat", passProps: {book_id: notif.book_id, user: JSON.parse(notif.user)}});
-      }
-    });
+    // FCM.getInitialNotification().then(notif => {
+    //   console.log('notificationListener', notif, RemoteNotificationResult.NewData, WillPresentNotificationResult.All);
+    //   if (notif.book_id) {
+    //     self.navigator.immediatelyResetRouteStack([
+    //       {name: "Main", passProps: {}},
+    //       {name: "BookDetail", passProps: {bookId: notif.book_id}},
+    //       {name: "ListChat", passProps: {token: token, user: JSON.parse(userCurrent), book_id: notif.book_id}}
+    //     ]);
+    //     self.navigator.push({name: "Chat", passProps: {book_id: notif.book_id, user: JSON.parse(notif.user)}});
+    //   }
+    // });
   }
 
   componentDidMount() {

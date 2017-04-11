@@ -24,6 +24,7 @@ import Modal from 'react-native-modalbox';
 import ImagePicker from 'react-native-image-picker';
 import t from 'tcomb-form-native';
 import Dimensions from 'Dimensions';
+import FloatLabelTextInput from 'react-native-floating-label-text-input';
 
 var Form = t.form.Form;
 
@@ -77,7 +78,6 @@ export default class CreateBook extends Component {
     var self = this;
 
     ImagePicker.showImagePicker(options, (response) => {
-      console.log('Response = ', response);
       if (response.didCancel) {
         console.log('User cancelled image picker');
       }
@@ -123,11 +123,10 @@ export default class CreateBook extends Component {
 
   async onCreateBook() {
     var token = await AsyncStorage.getItem('token');
-    var valueForm = this.refs.form.getValue();
     var self = this;
     let formdata = new FormData();
-    formdata.append("title", valueForm.title);
-    formdata.append("description", valueForm.description);
+    formdata.append("title", this.state.title);
+    formdata.append("description", this.state.description);
     _.forEach(this.state.images, function(value) {
       formdata.append("images", {uri: value.uri, name: value.fileName, type: 'multipart/form-data'});
     });
@@ -150,6 +149,10 @@ export default class CreateBook extends Component {
       });
   }
 
+  onChangeText(label, e) {
+    this.state[label] = e;
+  }
+
   render() {
     return (
         <Image source={require('../../img/subtle-vertical-stripes.png')}
@@ -165,13 +168,27 @@ export default class CreateBook extends Component {
                  {this.buildImagePreview()}
                </ScrollView>
             </View>
-            <Form
-              ref="form"
-              type={CreateBookForm}
-              options={optionsForm}
-              onChange={this.onChange.bind(this)}
-              />
-            <Button title="Create Book" onPress={this.onCreateBook.bind(this)}></Button>
+            <View style={styles.form}>
+              <View style={styles.formElem}>
+                <FloatLabelTextInput
+                  style={styles.title}
+                  placeholder={"Title"}
+                  value={this.state.title}
+                  onChangeTextValue={this.onChangeText.bind(this, 'title')}
+                />
+              </View>
+              <View style={styles.formElemDes}>
+                <FloatLabelTextInput
+                  style={styles.description}
+                  placeholder={"Description"}
+                  value={this.state.description}
+                  onChangeTextValue={this.onChangeText.bind(this, 'description')}
+                  multiline = {true}
+                  numberOfLines = {3}
+                />
+              </View>
+            </View>
+            <Button style={styles.btnSubmit} title="Create Book" onPress={this.onCreateBook.bind(this)}></Button>
           </View>
         </Image>
     );
@@ -179,16 +196,34 @@ export default class CreateBook extends Component {
 }
 
 const styles = StyleSheet.create({
+  title:{
+  },
+  description:{
+  },
   backgroundImage: {
     flex: 1,
     width: null,
     height: null
   },
   container: {
-    flex: 1
+    flex: 1,
+    justifyContent: "space-between"
+  },
+  form: {
+    flex: 3,
+    justifyContent: "flex-start"
+  },
+  formElem: {
+    height: 45
+  },
+  formElemDes: {
+    height: 135
   },
   wrImages: {
-
+    flex: 1
+  },
+  btnSubmit: {
+    flex: 1
   },
   scrollView: {
     height: 123,

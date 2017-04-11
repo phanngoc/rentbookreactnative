@@ -16,6 +16,7 @@ import {
 import MapView from 'react-native-maps';
 import Tabs from 'react-native-tabs';
 import {BASE_URL, BASE_SOCK_URL} from '../const';
+import Icon from 'react-native-vector-icons/FontAwesome';
 
 export default class Profile extends Component {
   constructor() {
@@ -150,6 +151,45 @@ export default class Profile extends Component {
     }
   }
 
+  async _signOut() {
+    console.log("_signOut");
+    let device_token = null;
+    let token = null;
+    try {
+      device_token = await AsyncStorage.getItem("device_token");
+      token = await AsyncStorage.getItem("token");
+      console.log("token ne", token, "device_token", device_token);
+    } catch (error) {
+      console.log("error when get", device_token, token);
+    }
+
+    let self = this;
+    // AsyncStorage.removeItem("token");
+    // AsyncStorage.removeItem("device_token");
+    // AsyncStorage.removeItem("user");
+    fetch(BASE_URL + '/api/users/sign-out', {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'x-access-token': token
+      },
+      body: JSON.stringify({
+        device_token: device_token,
+      })
+    })
+    .then((response) => response.json())
+    .then(function(responseJson) {
+      console.log('response Json', responseJson);
+      if (responseJson.success == true) {
+        AsyncStorage.removeItem("token");
+        AsyncStorage.removeItem("device_token");
+        AsyncStorage.removeItem("user");
+        self.props.navigator.push({name: 'Signin', passProps: {}});
+      }
+    });
+  }
+
   render() {
     return (
       <Image source={require('../../img/subtle-vertical-stripes.png')}
@@ -161,6 +201,9 @@ export default class Profile extends Component {
               source={{uri: this.state.avatar}}
             />
             <Text style={styles.name}>{this.state.name}</Text>
+            <TouchableOpacity onPress={this._signOut.bind(this)}>
+              <Icon name="sign-out" size={30} color="#900" />
+            </TouchableOpacity>
           </View>
           <View style={styles.item}>
             <Text style={styles.itemLabel}>Username</Text>
@@ -188,6 +231,10 @@ export default class Profile extends Component {
 }
 
 const styles = StyleSheet.create({
+  avatarContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between"
+  },
   backgroundImage: {
     flex: 1,
     width: null,
@@ -213,9 +260,6 @@ const styles = StyleSheet.create({
     borderRadius: 24,
   },
   name: {
-    position: 'absolute',
-    left: 70,
-    top: 15,
     fontWeight: "bold",
     fontSize: 16
   },

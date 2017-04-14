@@ -2,6 +2,14 @@
 This is it's server.
 https://github.com/phanngoc/rentbookserver
 
+List some function of app:
+  - Login, logout, show profile, list books which you want to borrow, list books which you have already borrowed, track location which this user already went.
+  - Use can create book for all people borrow.
+  - Chat each other for people want borrow and book owner.
+  - List borrowed book is nearest in map.
+  - Search book and list book by trending.
+
+
 There are some demo picture:
 
 <img src="https://cloud.githubusercontent.com/assets/3756788/25035219/6cddefbe-2116-11e7-8b13-87745ed00610.png" width="200" />| 
@@ -12,6 +20,7 @@ There are some demo picture:
 <img src="https://cloud.githubusercontent.com/assets/3756788/25035223/6d3112ca-2116-11e7-86d4-3e8024349af8.png" width="200" />|<img src="https://cloud.githubusercontent.com/assets/3756788/25035224/6d31334a-2116-11e7-9851-52d917114235.png" width="200" />|
 <img src="https://cloud.githubusercontent.com/assets/3756788/25035226/6d3d77ea-2116-11e7-91e6-fd676ac40777.png" width="200" />
 
+## Enjoy and learning !
 
 
 

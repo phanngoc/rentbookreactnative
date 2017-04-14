@@ -15,7 +15,8 @@ import {
   TextInput,
   BackAndroid,
   Keyboard,
-  Alert
+  Alert,
+  Linking
 } from 'react-native';
 
 import {BASE_URL} from '../const';
@@ -25,6 +26,7 @@ import ImagePicker from 'react-native-image-picker';
 import t from 'tcomb-form-native';
 import Dimensions from 'Dimensions';
 import FloatLabelTextInput from 'react-native-floating-label-text-input';
+import OpenSettings from 'react-native-open-settings';
 
 var Form = t.form.Form;
 
@@ -88,7 +90,6 @@ export default class CreateBook extends Component {
         console.log('User tapped custom button: ', response.customButton);
       }
       else {
-        console.log(response);
         let images = _.union(self.state.images, [response]);
         self.setState({
           images: images
@@ -124,29 +125,47 @@ export default class CreateBook extends Component {
   async onCreateBook() {
     var token = await AsyncStorage.getItem('token');
     var self = this;
-    let formdata = new FormData();
-    formdata.append("title", this.state.title);
-    formdata.append("description", this.state.description);
-    _.forEach(this.state.images, function(value) {
-      formdata.append("images", {uri: value.uri, name: value.fileName, type: 'multipart/form-data'});
-    });
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        let formdata = new FormData();
+        formdata.append("title", self.state.title);
+        formdata.append("description", self.state.description);
+        formdata.append("lat", position.coords.latitude);
+        formdata.append("lng", position.coords.longitude);
+        _.forEach(self.state.images, function(value) {
+          formdata.append("images", {uri: value.uri, name: value.fileName, type: 'multipart/form-data'});
+        });
 
-    fetch(BASE_URL + '/api/books', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'multipart/form-data',
-          'x-access-token': token
-        },
-        body: formdata
-      })
-      .then((response) => response.json())
-      .then(response => {
-        if (response.success) {
-          self.props.navigatorMain.pop();
-        }
-      }).catch(err => {
-        console.log(err);
-      });
+        fetch(BASE_URL + '/api/books', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'multipart/form-data',
+            'x-access-token': token
+          },
+          body: formdata
+        })
+        .then((response) => response.json())
+        .then(response => {
+          if (response.success) {
+            self.props.navigatorMain.pop();
+          }
+        }).catch(err => {
+          console.log(err);
+        });
+      },
+      (error) => {
+        Alert.alert(
+          'Alert',
+          'Please turn on location to update location where book can borrowed',
+          [
+            {text: 'Go to setting page', onPress: () => OpenSettings.openSettings()},
+            {text: 'Cancel', onPress: () => {self.props.navigatorMain.pop()}, style: 'cancel'},
+          ],
+          { cancelable: false }
+        )
+      },
+      {enableHighAccuracy: true, timeout: 20000, maximumAge: 1000}
+    );
   }
 
   onChangeText(label, e) {

@@ -38,46 +38,50 @@ export default class Search extends Component {
     console.log(rowData+' pressed');
   }
 
+  getGeoLocation() {
+    return new Promise(function(resolve, reject) {
+      function positionSuccess(position){
+        let query = "&lat=" + position.coords.latitude +
+          "&lng=" + position.coords.longitude;
+        resolve(query);
+      }
+      function positionError(error) {
+        resolve("");
+      };
+      navigator.geolocation.getCurrentPosition(positionSuccess, positionError);
+    });
+  };
+
   async _fetchNetwork(callback, page = 1) {
     var self = this;
     let token = await AsyncStorage.getItem('token');
-    let location = navigator.geolocation.getCurrentPosition(
-      (position) => {
-        let query = "lat=" + position.coords.latitude + "&lng=" + position.coords.longitude
-          + "&q=" + this.state.text + "&page=" + page;
-        fetch(BASE_URL+'/api/books/search?' + query, {
-          method: 'GET',
-          headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
-            'x-access-token': token
-          }
-        })
-        .then((response) => response.json())
-        .then(function(responseJson) {
-          console.log("responseJson", responseJson.body);
-          if (responseJson.body.isLast) {
-            callback(responseJson.body.books, {
-              allLoaded: true, // the end of the list is reached
-            });
-          } else {
-            callback(responseJson.body.books);
-          }
-        })
-        .catch(function(error) {
-        });
+    let query = await this.getGeoLocation();
 
-        return {lat: position.coords.latitude, lng: position.coords.longitude}
-      },
-      (error) => alert(JSON.stringify(error)),
-      {enableHighAccuracy: true, timeout: 20000, maximumAge: 1000}
-    );
+    fetch(BASE_URL+'/api/books/search?q=' + this.state.text + '&page=' + page + query, {
+      method: 'GET',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'x-access-token': token
+      }
+    })
+    .then((response) => response.json())
+    .then(function(responseJson) {
+      if (responseJson.body.isLast) {
+        callback(responseJson.body.books, {
+          allLoaded: true, // the end of the list is reached
+        });
+      } else {
+        callback(responseJson.body.books);
+      }
+    })
+    .catch(function(error) {
+    });
   }
 
   async onChange(text) {
     this.setState({text: text});
     this.refs.listResults._refresh();
-    // this.refs.listResults._postRefresh(null, {external: true});
   }
 
   _renderRowResult(rowResult) {

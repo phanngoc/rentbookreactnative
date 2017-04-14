@@ -43,6 +43,7 @@ export default class AwesomeProject extends Component {
     this.state = {
       initialRoute: {name: "Main", passProps: {}},
       isExpand: false,
+      page: 0
     }
     this.navigator = null;
   }
@@ -53,28 +54,34 @@ export default class AwesomeProject extends Component {
     var token = await AsyncStorage.getItem('token');
 
     this.notificationListener = FCM.on(FCMEvent.Notification, async (notif) => {
-
+      console.log("notificationListener", notif);
     });
 
     this.refreshTokenListener = FCM.on(FCMEvent.RefreshToken, (token) => {
       console.log("refreshTokenListener", token);
     });
 
-    // FCM.getInitialNotification().then(notif => {
-    //   console.log('notificationListener', notif, RemoteNotificationResult.NewData, WillPresentNotificationResult.All);
-    //   if (notif.book_id) {
-    //     self.navigator.immediatelyResetRouteStack([
-    //       {name: "Main", passProps: {}},
-    //       {name: "BookDetail", passProps: {bookId: notif.book_id}},
-    //       {name: "ListChat", passProps: {token: token, user: JSON.parse(userCurrent), book_id: notif.book_id}}
-    //     ]);
-    //     self.navigator.push({name: "Chat", passProps: {book_id: notif.book_id, user: JSON.parse(notif.user)}});
-    //   }
-    // });
+    FCM.getInitialNotification().then(notif => {
+      console.log('getInitialNotification', notif, RemoteNotificationResult.NewData, WillPresentNotificationResult.All);
+      if (notif.book_id && notif.opened_from_tray) {
+        self.navigator.immediatelyResetRouteStack([
+          {name: "Main", passProps: {}},
+          {name: "BookDetail", passProps: {bookId: notif.book_id}},
+          {name: "ListChat", passProps: {token: token, user: JSON.parse(userCurrent), book_id: notif.book_id}}
+        ]);
+        self.navigator.push({name: "Chat", passProps: {book_id: notif.book_id, user: JSON.parse(notif.user)}});
+      }
+    });
+    FCM.removeAllDeliveredNotifications();
+    FCM.cancelAllLocalNotifications();
   }
 
   componentDidMount() {
 
+  }
+
+  moveProfile() {
+    this.setState({page: 0});
   }
 
   renderScene(route, navigator) {
@@ -84,10 +91,13 @@ export default class AwesomeProject extends Component {
       innerView = (<ScrollableTabView
         renderTabBar={() => <DefaultTabBar />}
         ref={(tabView) => { this.tabView = tabView; }}
+        initialPage={0}
+        tabBarPosition="bottom"
+        page={this.state.page}
       >
          <Menu tabLabel='Profile' navigatorMain={navigator}
            {...route.passProps}/>
-         <Nearest tabLabel='Nearest' navigatorMain={navigator} />
+         <Nearest tabLabel='Nearest' navigatorMain={navigator} moveProfile={this.moveProfile.bind(this)} />
          <Trending tabLabel='Trending' navigatorMain={navigator} />
          <Search tabLabel='Search' navigatorMain={navigator}></Search>
       </ScrollableTabView>);

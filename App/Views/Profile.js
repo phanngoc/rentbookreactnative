@@ -164,9 +164,6 @@ export default class Profile extends Component {
     }
 
     let self = this;
-    // AsyncStorage.removeItem("token");
-    // AsyncStorage.removeItem("device_token");
-    // AsyncStorage.removeItem("user");
     fetch(BASE_URL + '/api/users/sign-out', {
       method: 'POST',
       headers: {

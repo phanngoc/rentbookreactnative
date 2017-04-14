@@ -13,7 +13,8 @@ import {
   Text,
   View,
   TouchableOpacity,
-  Image
+  Image,
+  Alert
 } from 'react-native';
 
 import {BASE_URL} from '../const';
@@ -111,13 +112,22 @@ export default class Nearest extends Component {
 
         return {lat: position.coords.latitude, lng: position.coords.longitude}
       },
-      (error) => alert(JSON.stringify(error)),
+      (error) => {
+        Alert.alert(
+          'Alert',
+          'Please turn on location to update location where book can borrowed',
+          [
+            {text: 'Go to setting page', onPress: () => OpenSettings.openSettings()},
+            {text: 'Cancel', onPress: () => {self.props.moveProfile()}, style: 'cancel'},
+          ],
+          { cancelable: false }
+        )
+      },
       {enableHighAccuracy: true, timeout: 20000, maximumAge: 1000}
     );
   }
 
   buildMarker() {
-    console.log("buildMarker");
     let self = this;
     let compoMarker = [];
     _.forEach(this.state.books, function(book, key) {

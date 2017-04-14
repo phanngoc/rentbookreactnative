@@ -1,5 +1,5 @@
 # React native app for renting book
-This is this server.
+This is it's server.
 https://github.com/phanngoc/rentbookserver
 
 There are some demo picture:

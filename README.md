@@ -9,8 +9,13 @@ List some function of app:
   - List borrowed book is nearest in map.
   - Search book and list book by trending.
 
-
-**There are some demo picture:**
+## Installing
+  - cd rentbookreactnative
+  - run: npm install
+  - run: react-native link
+  - run: react-native run-android  
+*Note: App have been developed to support all android and ios, (all used library support both of them), but i haven't still tested in ios, you can try and support issue for building on ios*  
+  **There are some demo picture:**  
 
 <img src="https://cloud.githubusercontent.com/assets/3756788/25035219/6cddefbe-2116-11e7-8b13-87745ed00610.png" width="200" />| 
 <img src="https://cloud.githubusercontent.com/assets/3756788/25035220/6d09583e-2116-11e7-9579-83490db62753.png" width="200" />|
